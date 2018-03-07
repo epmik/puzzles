@@ -1,35 +1,47 @@
 <html>
 <head>
-    <title>011-eight-switch</title>
+    <title>Eight Switch Puzzle</title>
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
     <style>
+        html {
+            font-size: 16px;
+        }
+        html, body {
+            height: 100%;
+        }
         body {
-            margin: 0;
+            margin: 1rem 2rem;
+            padding: 0;
             background-color: #fff;
+            font-family: 'Ubuntu', sans-serif;
+            text-align: center;
         }
-
-        #export-obj-top-right {
-            position: absolute;
-            top: 8px;
-            right: 16px;
-            width: auto;
-            height: auto;
-            z-index: 50;
-            padding:4px 8px;
-            display: inline-block;
-        }
-        #return{
-            position: absolute;
-            bottom: 8px;
-            left: 16px;
-            width: auto;
-            height: auto;
-            z-index: 50;
-            padding:4px 8px;
-            display: inline-block;
+        a {
+            color: #0366d6;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
+    <h1>8 switch puzzle</h1>
+    <p>
+        <strong>objective</strong>
+    </p>
+    <p>
+        turn all squares to green by clicking on them.
+    </p>
+    <p>
+        clicking on a square will change it's color AND the color of the neighbouring squares.
+    </p>
+    <p style="margin-top: 2rem;">
+        <a href="">Give me a new puzzle</a>
+    </p>
+    <div id="canvas-container" style="margin: 4rem 0;">
+    </div>
+    <div>
+        <a id="return" href="../">Return to start page</a>
+    </div>
+    
     <script src="js/jquery/jquery-3.3.1.js"></script>
 <!--
     <script src="js/threejs/three.js"></script>
@@ -42,7 +54,5 @@
     <script src="js/p5/p5.js"></script>
     <script src="js/app.switch.js"></script>
     <script src="js/app.js"></script>
-    <a id="return" href="../">Return</a>
-    <!--<a id="export-obj-top-right" class="export-obj" href="">Export to obj</a>-->
 </body>
 </html>
