@@ -12,6 +12,7 @@ app.settings = {
     switchSize:80,
     near: 0.1,
     far: 1000,
+    numberOfPermutions: 5,
 };
 
 function setup() {
@@ -49,6 +50,13 @@ function setup() {
         y += app.settings.switchSize + app.settings.switchSize * 0.5;
     }
     
+    setupNeighbours();
+    
+    reset();
+}
+
+function setupNeighbours()
+{
     app.switches[0].neighbours.a = 1;
     app.switches[0].neighbours.b = 3;
     
@@ -72,9 +80,16 @@ function setup() {
     
     app.switches[7].neighbours.a = 6;
     app.switches[7].neighbours.b = 4;
-    
-    permutate(6);
+}
 
+function reset()
+{
+    for(let s of app.switches)
+    {
+        s.state = app.switchStates.open;
+    }
+    
+    permutate(app.settings.numberOfPermutions);
 }
 
 function permutate(amount)
@@ -87,6 +102,15 @@ function permutate(amount)
         
         switchStates(app.switches[index]);
     }
+    
+    for(var i = 0; i < app.switches.length; i++)
+    {
+        app.switches[i].state == app.switchStates.closed;
+        
+        return;
+    }
+    
+    permutate(amount);
 }
 
 function randomSwitch(not)
