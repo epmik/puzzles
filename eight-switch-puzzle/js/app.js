@@ -2,35 +2,36 @@
 
 var app = window.app || {};
 
+app.canvas = null;    
 app.scene = null;    
 app.camera = null;    
 app.renderer = null;    
 app.stats = null;    
 app.switches = [];    
 app.settings = { 
-    width: window.innerWidth,
-    height: window.innerHeight,
+    switchSize:80,
     near: 0.1,
     far: 1000,
-    switchSize:100,
 };
 
 function setup() {
   
-    createCanvas(app.settings.width, app.settings.height);
+    app.canvas = createCanvas(app.settings.switchSize * 4, app.settings.switchSize * 4);
     
-    var x = (app.settings.width - (5 * app.settings.switchSize)) * 0.5;
-    var y = (app.settings.height - (5 * app.settings.switchSize)) * 0.5;
+    app.canvas.parent("canvas-container");
+    
+    var x = 0;
+    var y = 0;
     
     for(var j = 0; j < 3; j++)
     {
-        x = (app.settings.width - (5 * app.settings.switchSize)) * 0.5;
+        x = 0;
         
         for(var i = 0; i < 3; i++)
         {
             if(j == 1 && i == 1)
             {
-                x += app.settings.switchSize + app.settings.switchSize;
+                x += app.settings.switchSize + app.settings.switchSize * 0.5;
                 continue;
             }
             
@@ -42,10 +43,10 @@ function setup() {
             s.position.y = y;
             s.size = app.settings.switchSize;
             
-            x += app.settings.switchSize + app.settings.switchSize;
+            x += app.settings.switchSize + app.settings.switchSize * 0.5;
         }
         
-        y += app.settings.switchSize + app.settings.switchSize;
+        y += app.settings.switchSize + app.settings.switchSize * 0.5;
     }
     
     app.switches[0].neighbours.a = 1;
@@ -72,7 +73,7 @@ function setup() {
     app.switches[7].neighbours.a = 6;
     app.switches[7].neighbours.b = 4;
     
-    permutate(5);
+    permutate(6);
 
 }
 
@@ -109,7 +110,7 @@ function switchStates(s)
 
 function draw() {
   
-    background(127);
+    background(255);
   
     noStroke();
     
@@ -120,7 +121,6 @@ function draw() {
 
 }
 
-// When the user clicks the mouse
 function mousePressed() {
         
     for(var i = 0; i < app.switches.length; i++)
@@ -131,13 +131,4 @@ function mousePressed() {
             switchStates(s);
         }
     }
-
-//  // Check if mouse is inside the circle
-//  var d = dist(mouseX, mouseY, 360, 200);
-//  if (d < 100) {
-//    // Pick new random color values
-//    r = random(255);
-//    g = random(255);
-//    b = random(255);
-//  }
 }

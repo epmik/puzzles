@@ -19,16 +19,16 @@ app.switch.prototype.draw = function(){
     
     if(this.state == app.switchStates.closed)
     {
-        fill(255, 0, 0);
+        fill(225, 52, 25);
     }
     else
     {
-        fill(0, 255, 0);
+        fill(25, 132, 31);
     }
     
     translate(this.position.x, this.position.y);
     
-    rect(0, 0, this.size, this.size);
+    rect(0, 0, this.size, this.size, this.size * 0.1);
     
     pop();
 }
