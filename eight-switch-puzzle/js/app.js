@@ -2,6 +2,18 @@
 
 var app = window.app || {};
 
+app.playStyles = {
+    selfAndNeighbours: 0,
+    neighboursOnly : 1,
+    opposites : 2,
+}
+
+app.playDifficulty = {
+    easy: 0,
+    normal : 1,
+//    hard : 2,
+}
+
 app.canvas = null;    
 app.scene = null;    
 app.camera = null;    
@@ -10,9 +22,10 @@ app.stats = null;
 app.switches = [];    
 app.settings = { 
     switchSize:80,
-    near: 0.1,
-    far: 1000,
-    numberOfPermutions: 5,
+    numberOfPermutionsEasy: 2,
+    numberOfPermutionsNormal: 6,
+    playStyle: app.playStyles.selfAndNeighbours,
+    playDifficulty: app.playDifficulty.normal,
 };
 
 function setup() {
@@ -50,67 +63,149 @@ function setup() {
         y += app.settings.switchSize + app.settings.switchSize * 0.5;
     }
     
-    setupNeighbours();
+    resetElementsToSwitch();
     
-    reset();
+    resetPlay();
+    
+    $(".puzzle-options-difficulty").val(app.settings.playDifficulty);
+    $(".puzzle-options-type").val(app.settings.playStyle);
+    
+    $(".reset-puzzle").on("click", function() {
+        resetPlay();
+        return false;
+    });
+    
+    $(".puzzle-options-difficulty").on("change", function() {
+        app.settings.playDifficulty = parseInt($(this).val());
+//        console.log("puzzle difficulty is now " + app.settings.playDifficulty);
+        resetPlay();
+        return false;
+    });
+    
+    $(".puzzle-options-type").on("change", function() {
+        app.settings.playStyle = parseInt($(this).val());
+//        console.log("puzzle type is now " + app.settings.playStyle);
+        resetElementsToSwitch();
+        resetPlay();
+        return false;
+    });
 }
 
-function setupNeighbours()
+function resetElementsToSwitch()
 {
-    app.switches[0].neighbours.a = 1;
-    app.switches[0].neighbours.b = 3;
+    for(let s of app.switches)
+    {
+        s.elementsToSwitch = [];
+    }    
     
-    app.switches[1].neighbours.a = 0;
-    app.switches[1].neighbours.b = 2;
+    if(app.settings.playStyle == app.playStyles.neighboursOnly || app.settings.playStyle == app.playStyles.selfAndNeighbours)
+    {
+        app.switches[0].elementsToSwitch.push(1);
+        app.switches[0].elementsToSwitch.push(3);
+
+        app.switches[1].elementsToSwitch.push(0);
+        app.switches[1].elementsToSwitch.push(2);
+
+        app.switches[2].elementsToSwitch.push(1);
+        app.switches[2].elementsToSwitch.push(4);
+
+        app.switches[3].elementsToSwitch.push(0);
+        app.switches[3].elementsToSwitch.push(5);
+
+        app.switches[4].elementsToSwitch.push(2);
+        app.switches[4].elementsToSwitch.push(7);
+
+        app.switches[5].elementsToSwitch.push(3);
+        app.switches[5].elementsToSwitch.push(6);
+
+        app.switches[6].elementsToSwitch.push(5);
+        app.switches[6].elementsToSwitch.push(7);
+
+        app.switches[7].elementsToSwitch.push(6);
+        app.switches[7].elementsToSwitch.push(4);
+    }
     
-    app.switches[2].neighbours.a = 1;
-    app.switches[2].neighbours.b = 4;
+    if(app.settings.playStyle == app.playStyles.selfAndNeighbours)
+    {
+        app.switches[0].elementsToSwitch.push(0);
+
+        app.switches[1].elementsToSwitch.push(1);
+
+        app.switches[2].elementsToSwitch.push(2);
+
+        app.switches[3].elementsToSwitch.push(3);
+
+        app.switches[4].elementsToSwitch.push(4);
+
+        app.switches[5].elementsToSwitch.push(5);
+
+        app.switches[6].elementsToSwitch.push(6);
+
+        app.switches[7].elementsToSwitch.push(7);
+    }
     
-    app.switches[3].neighbours.a = 0;
-    app.switches[3].neighbours.b = 5;
+    if(app.settings.playStyle == app.playStyles.opposites)
+    {
+        app.switches[0].elementsToSwitch.push(4);
+        app.switches[0].elementsToSwitch.push(6);
+
+        app.switches[1].elementsToSwitch.push(5);
+        app.switches[1].elementsToSwitch.push(7);
+
+        app.switches[2].elementsToSwitch.push(3);
+        app.switches[2].elementsToSwitch.push(6);
+
+        app.switches[3].elementsToSwitch.push(2);
+        app.switches[3].elementsToSwitch.push(7);
+
+        app.switches[4].elementsToSwitch.push(0);
+        app.switches[4].elementsToSwitch.push(5);
+
+        app.switches[5].elementsToSwitch.push(1);
+        app.switches[5].elementsToSwitch.push(4);
+
+        app.switches[6].elementsToSwitch.push(0);
+        app.switches[6].elementsToSwitch.push(2);
+
+        app.switches[7].elementsToSwitch.push(1);
+        app.switches[7].elementsToSwitch.push(3);
+    }
     
-    app.switches[4].neighbours.a = 2;
-    app.switches[4].neighbours.b = 7;
-    
-    app.switches[5].neighbours.a = 3;
-    app.switches[5].neighbours.b = 6;
-    
-    app.switches[6].neighbours.a = 5;
-    app.switches[6].neighbours.b = 7;
-    
-    app.switches[7].neighbours.a = 6;
-    app.switches[7].neighbours.b = 4;
 }
 
-function reset()
+function resetPlay()
 {
     for(let s of app.switches)
     {
         s.state = app.switchStates.open;
     }
     
-    permutate(app.settings.numberOfPermutions);
+    permutate(
+        app.settings.playDifficulty == app.playDifficulty.easy 
+        ? app.settings.numberOfPermutionsEasy 
+        : app.settings.numberOfPermutionsNormal);
 }
 
-function permutate(amount)
+function permutate(numberOfPermutions)
 {
     var last = parseInt(Math.random() * app.switches.length);
     
-    for(var i = 0; i < amount; i++)
+    for(var i = 0; i < numberOfPermutions; i++)
     {
         var index = randomSwitch(last);
         
         switchStates(app.switches[index]);
     }
     
-    for(var i = 0; i < app.switches.length; i++)
+    for(let s of app.switches)
     {
-        app.switches[i].state == app.switchStates.closed;
-        
-        return;
+        if(s.state == app.switchStates.closed)
+        {
+            return;
+        }        
     }
     
-    permutate(amount);
+    permutate(numberOfPermutions);
 }
 
 function randomSwitch(not)
@@ -127,9 +222,10 @@ function randomSwitch(not)
 
 function switchStates(s)
 {
-    s.switchState(); 
-    app.switches[s.neighbours.a].switchState(); 
-    app.switches[s.neighbours.b].switchState(); 
+    for(let index of s.elementsToSwitch)
+    {
+        app.switches[index].switchState();
+    }
 }
 
 function draw() {
