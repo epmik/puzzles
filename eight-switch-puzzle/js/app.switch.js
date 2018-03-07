@@ -10,7 +10,7 @@ app.switch = function(){
     this.state = app.switchStates.open;
     this.position = { x : 0, y : 0 };
     this.size = 100;
-    this.neighbours = { a : null, b : null };
+    this.elementsToSwitch = [];
 }
 
 app.switch.prototype.draw = function(){

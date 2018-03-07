@@ -3,6 +3,16 @@
     <title>Eight Switch Puzzle</title>
     <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
     <style>
+        :after, :before {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+        * {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
         html {
             font-size: 16px;
         }
@@ -20,6 +30,13 @@
             color: #0366d6;
             text-decoration: none;
         }
+        .col{
+            float: left;
+            width: 50%;
+        }
+        select{
+            padding: 0.25rem 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -33,8 +50,29 @@
     <p>
         clicking on a square will change it's color AND the color of the neighbouring squares.
     </p>
-    <p style="margin-top: 2rem;">
-        <a href="">Give me a new puzzle</a>
+    <div style="width: 800px; margin:2rem auto;">
+        <div class="col" style="margin-bottom: 2rem;">
+            <p><strong>Difficulty</strong></p>
+            <p>
+                <select class="puzzle-options puzzle-options-difficulty">
+                    <option value="0">Easy</option>
+                    <option value="1">Normal</option>
+                </select>
+            </p>
+        </div>
+        <div class="col" style="margin-bottom: 2rem;">
+            <p><strong>Puzzle type</strong></p>
+            <p>
+                <select class="puzzle-options puzzle-options-type">
+                    <option value="0">Click changes self and neighbours</option>
+                    <option value="1">Click changes only neighbours</option>
+                    <option value="2">Click changes opposite squares</option>
+                </select>
+            </p>
+        </div>
+    </div>
+    <p style="clear: both;">
+        <a class="reset-puzzle" href="">Give me a new puzzle</a>
     </p>
     <div id="canvas-container" style="margin: 4rem 0;">
     </div>
