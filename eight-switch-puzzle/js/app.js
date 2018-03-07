@@ -87,6 +87,15 @@ function permutate(amount)
         
         switchStates(app.switches[index]);
     }
+    
+    for(var i = 0; i < app.switches.length; i++)
+    {
+        app.switches[i].state == app.switchStates.closed;
+        
+        return;
+    }
+    
+    permutate(amount);
 }
 
 function randomSwitch(not)
