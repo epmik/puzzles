@@ -28,4 +28,3 @@ app.log = function(){
         console.log(object)
     }
 }
-
