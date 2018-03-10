@@ -2,7 +2,7 @@
 
 var app = window.app || {};
 
-app.flipState = {
+app.elementState = {
     min : 0,
     white : 0,
     black : 1,
