@@ -33,6 +33,7 @@ app.difficulty = {
 app.flipGame = function(){
     
     this.flippers = [];
+    this.currentInitializer = 0;
 }
 
 app.flipInitializers = [
@@ -53,6 +54,8 @@ app.flipInitializers = [
     { difficulty: app.difficulty.normal, rows: 3, columns: 3, indices: [0, 1, 2, 5, 4, 3, 6, 7, 8, 8, 7, 6, 3, 5, 4] },
     { difficulty: app.difficulty.normal, rows: 3, columns: 3, indices: [1, 3, 5, 8, 7, 6, 7, 5, 3] },
     { difficulty: app.difficulty.normal, rows: 3, columns: 3, indices: [0, 2, 4, 8, 6, 5, 3, 7, 1, 4, 6, 8, 2, 0] },
+    { difficulty: app.difficulty.normal, rows: 3, columns: 3, indices: [6, 8, 2, 0, 1, 3, 7, 5, 4] },
+    { difficulty: app.difficulty.normal, rows: 3, columns: 3, indices: [6, 8, 2, 0, 1, 3, 7, 5, 4, 7, 7, 7, 1] },
 ];
 
 app.flipGame.prototype.setup = function () {
@@ -71,22 +74,58 @@ app.flipGame.prototype.setup = function () {
     }
     
     this.setupFlipperPositions();
+                               
+    this.newGame();
+}
+
+app.flipGame.prototype.setupUi = function(){
     
-    var initializer = app.flipInitializers[parseInt(Math.random() * app.flipInitializers.length)];
-//    var initializer = app.flipInitializers[app.flipInitializers.length - 1];
+}
+
+app.flipGame.prototype.setupEventHandlers = function(){
+
+    $(".clear-state").on("click", function() {
+        app.game.clearState();
+        return false;
+    });
     
-    for(var i = 0; i < initializer.indices.length; i++) {
-        
-        this.nextState(this.flippers[initializer.indices[i]]);
-    }
+    $(".reset-state").on("click", function() {
+        app.game.resetState();
+        return false;
+    });
+    
+    $(".new-game").on("click", function() {
+        app.game.newGame();
+        return false;
+    });
+    
+//    $(".reset-puzzle").on("click", function() {
+//        resetPlay();
+//        return false;
+//    });
+//    
+//    $(".puzzle-options-difficulty").on("change", function() {
+//        app.settings.playDifficulty = parseInt($(this).val());
+////        console.log("puzzle difficulty is now " + app.settings.playDifficulty);
+//        resetPlay();
+//        return false;
+//    });
+//    
+//    $(".puzzle-options-type").on("change", function() {
+//        app.settings.playStyle = parseInt($(this).val());
+////        console.log("puzzle type is now " + app.settings.playStyle);
+//        resetElementsToSwitch();
+//        resetPlay();
+//        return false;
+//    });
 }
 
 app.flipGame.prototype.setupFlipperPositions = function ()
 {
-    var x = (app.canvas.width - (app.settings.flipperColumnCount * app.settings.flipWidth)) / 2;
-    var y = (app.canvas.height - (app.settings.flipperRowCount * app.settings.flipHeight)) / 2;
-    var w = app.settings.flipWidth;
-    var h = app.settings.flipHeight;
+    var x = (app.canvas.width - ((app.settings.flipperColumnCount * app.settings.flipWidth) + ((app.settings.flipperColumnCount - 1) * app.settings.flipperMargin))) / 2;
+    var y = (app.canvas.height - ((app.settings.flipperRowCount * app.settings.flipHeight) + ((app.settings.flipperRowCount - 1) * app.settings.flipperMargin))) / 2;
+    var w = app.settings.flipWidth + app.settings.flipperMargin;
+    var h = app.settings.flipHeight + app.settings.flipperMargin;
     var index = 0;
     
     for(var j = 0; j < app.settings.flipperRowCount; j++)
@@ -145,6 +184,29 @@ app.flipGame.prototype.findNeighbours = function(triangle)
     return neighbours;
 }
 
+app.flipGame.prototype.newGame = function ()
+{
+    var i = this.currentInitializer;
+    
+    while(i === this.currentInitializer){
+        this.currentInitializer = parseInt(Math.random() * app.flipInitializers.length);
+    }
+
+    this.resetState();
+}
+
+app.flipGame.prototype.resetState = function ()
+{
+    this.clearState();
+    
+    var initializer = app.flipInitializers[this.currentInitializer];
+    
+    for(var i = 0; i < initializer.indices.length; i++) {
+        
+        this.nextState(this.flippers[initializer.indices[i]]);
+    }
+}
+
 app.flipGame.prototype.clearState = function ()
 {
     app.clickedTriangles = [];
@@ -157,6 +219,8 @@ app.flipGame.prototype.clearState = function ()
 
 app.flipGame.prototype.draw = function () {
   
+    background(255);
+    
     noStroke();
     
     for(var i = 0; i < this.flippers.length; i++)
@@ -193,7 +257,7 @@ app.flipGame.prototype.nextState = function (flipper) {
         
     app.clickedTriangles.push(flipper.index);
 
-    console.log(app.clickedTriangles);
+    app.log(app.clickedTriangles);
             
     flipper.nextState();
 

@@ -34,7 +34,7 @@ app.flipper.prototype.draw = function(){
     noFill();
     
     strokeWeight(1);
-    stroke(127);  
+    stroke(235);  
     
 //    rect(0, 0, this.width, this.height);
 //    rect(0, 0, this.width, this.height, (this.width + this.height) * 0.05);
