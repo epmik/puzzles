@@ -16,9 +16,6 @@
         html {
             font-size: 16px;
         }
-        html, body {
-            height: 100%;
-        }
         body {
             margin: 1rem 2rem;
             padding: 0;
@@ -41,47 +38,29 @@
 </head>
 <body>
     <h1>color flip puzzle</h1>
-<!--
     <p>
         <strong>objective</strong>
     </p>
     <p>
-        turn all squares to green by clicking on them.
+        turn all squares to black by clicking on them.
     </p>
-    <p>
-        clicking on a square will change it's color AND the color of the neighbouring squares.
+    <p style="margin:auto; max-width: 960px;">
+        each square contains 4 triangles. clicking on the square will swap the colors of all the triangles in the square AND the triangles neighbouring the square.
+        so clicking on the square in the center will swap the colors of 8 triangles (4 in the square, 4 neighbouring the square).
+        clicking on the square in the top/left position will swap the colors of 6 triangles (4 in the square, 2 neighbouring the square).
     </p>
-    <div style="width: 800px; margin:2rem auto;">
-        <div class="col" style="margin-bottom: 2rem;">
-            <p><strong>Difficulty</strong></p>
-            <p>
-                <select class="puzzle-options puzzle-options-difficulty">
-                    <option value="0">Easy</option>
-                    <option value="1">Normal</option>
-                </select>
-            </p>
-        </div>
-        <div class="col" style="margin-bottom: 2rem;">
-            <p><strong>Puzzle type</strong></p>
-            <p>
-                <select class="puzzle-options puzzle-options-type">
-                    <option value="0">Click changes self and neighbours</option>
-                    <option value="1">Click changes only neighbours</option>
-                    <option value="2">Click changes opposite squares</option>
-                </select>
-            </p>
-        </div>
+    <div id="canvas-container" style="margin: 3rem 0 0 0;">
     </div>
-    <p style="clear: both;">
-        <a class="reset-puzzle" href="">Give me a new puzzle</a>
-    </p>
--->
-    <div id="canvas-container" style="margin: 4rem 0;">
+    <div style="margin:0 0 1rem 0">
+        <a class="reset-state" href="">Lost? Reset puzzle to it's initial state!</a>
     </div>
-    <div>
-        <a class="clear-state" href="../">Clear</a>
+    <div class="clear-state-container debug-only" style="margin: 1rem 0">
+        <a class="clear-state" href="">Clear</a>
     </div>
-    <div>
+    <div style="margin-top: 2rem">
+        <a class="new-game" href="">Give me a new puzzle!</a>
+    </div>
+    <div style="margin-top: 4rem">
         <a href="../">Return to start page</a>
     </div>
     
@@ -99,5 +78,6 @@
     <script src="js/app.flipTriangle.js"></script>
     <script src="js/app.flipGame.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
