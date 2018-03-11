@@ -17,9 +17,8 @@ app.settings = {
     buttonHeight:10,
 };
 
-app.log = function(){
+app.log = function(argument){
     if(app.debug === true){
-        console.log(object)
+        console.log(argument);
     }
 }
-
