@@ -84,3 +84,9 @@ function mousePressed() {
     app.game.handleClicks();
     
 }
+
+function mouseMoved() {
+
+    app.game.handleHover();
+    
+}

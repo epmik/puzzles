@@ -3,7 +3,9 @@
 var app = window.app || {};
 
 app.canvas = null;    
-app.debug = true;    
+app.debug = true;   
+//app.debugFunctionCalls = true;   
+app.debugHoverAreas = false;
 app.game = null;    
 app.clickedTriangles = [];
 app.settings = { 
@@ -19,6 +21,12 @@ app.settings = {
 
 app.log = function(argument){
     if(app.debug === true){
+        console.log(argument);
+    }
+}
+
+app.logFunctionCall = function(argument){
+    if(app.debugFunctionCalls === true){
         console.log(argument);
     }
 }
