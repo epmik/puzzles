@@ -21,14 +21,15 @@ app.colors = {
 }
 
 app.players = {
-    one: { id: 1, name: "player one", color: app.colors.orange, position: { x: 0, y: 0 } },
-    two: { id: 2, name: "player two", color: app.colors.blue, position: { x: 0, y: 0 } },
+    one: { id: 1, name: "blue player", color: app.colors.orange, position: { x: 0, y: 0 } },
+    two: { id: 2, name: "orange player", color: app.colors.blue, position: { x: 0, y: 0 } },
 }
 
 app.board = function(){
     this.elements = [];
     this.currentPlayer = app.players.one;
 	this.highlightedElement = null;
+	this.forceFlipElement = null;
 }
 
 app.board.prototype.setup = function(){
@@ -36,9 +37,9 @@ app.board.prototype.setup = function(){
     // 7 triangles per row
     // 6 rows
     
-    app.players.one.position.x = app.game.width() * 0.5 - 88;
+    app.players.one.position.x = app.game.width() * 0.5 - 104;
     app.players.one.position.y = app.game.height() - 60;
-    app.players.two.position.x = app.game.width() * 0.5 - 88;
+    app.players.two.position.x = app.game.width() * 0.5 - 126;
     app.players.two.position.y = 70;
 
     var upElement = new app.boardElement();
@@ -118,9 +119,6 @@ app.board.prototype.logCurrentPlayer = function(){
 
 app.board.prototype.nextPlayer = function(){
 
-    this._resetHighlightedDotColors();
-	this.highlightedElement = null;
-
     if(this.currentPlayer === app.players.one){
         this.currentPlayer = app.players.two;
     }
@@ -169,7 +167,7 @@ app.board.prototype.canMoveTo = function(element, movetoElement){
 
 app.board.prototype._surroundedByOtherPlayerCount = function(element){
 
-    var otherPlayerState = this.currentPlayer === app.players.one ? app.players.two : app.players.one;
+    var otherPlayer = this._detectOtherPlayer();
 
 	var count = 0;
 
@@ -177,12 +175,17 @@ app.board.prototype._surroundedByOtherPlayerCount = function(element){
     {
         var n = this.elements[element.neighbours[i]];
 
-        if(n.player === otherPlayerState){
+        if(n.player === otherPlayer){
           	count++;
         }
     }
 
     return count;
+}
+
+app.board.prototype._detectOtherPlayer = function(){
+
+    return this.currentPlayer === app.players.one ? app.players.two : app.players.one;
 }
 
 app.board.prototype._setupNeighbours = function(element){
@@ -228,7 +231,23 @@ app.board.prototype._isOnSameRow = function(elementIndex, neighbourIndex){
 
 app.board.prototype.update = function(elapsed){
     
-	this._handlePointer(mouseX, mouseY);
+    if(this.forceFlipElement !== null){
+        
+        this.forceFlipElement.isPulsing = true;        
+
+        for(var i = 0; i < this.forceFlipElement.neighbours.length; i++){
+
+            var neighbour = this.elements[this.forceFlipElement.neighbours[i]];
+            
+            if(this.canMoveTo(this.forceFlipElement, neighbour)){
+                neighbour.isPulsing = true;
+                neighbour.color = this.forceFlipElement.player.color;
+            }
+        }        
+    }
+    else{
+        this._handlePointer(mouseX, mouseY);
+    }
 
 	for(var i = 0; i < this.elements.length; i++){
 		this.elements[i].update(elapsed);
@@ -327,12 +346,41 @@ app.board.prototype.handleClicks = function(mousex, mousey){
 
             this.highlightedElement.player = null;
             this.highlightedElement.currentPulse = 0;
+            this._resetHighlightedDotColors();
+	        this.highlightedElement = null;
+            this.forceFlipElement = null;
+            
+            this._detectForcedFlipElement(neighbour);
+            
+            if(this.forceFlipElement !== null){
+                this.highlightedElement = this.forceFlipElement;
+            }
 
 			this.nextPlayer();
 
 			return;
 		}
 	}
+}
+
+app.board.prototype._detectForcedFlipElement = function(element){
+    
+    var otherPlayer = this._detectOtherPlayer();
+    
+	for(var i = 0; i < element.neighbours.length; i++){
+
+		var neighbour = this.elements[element.neighbours[i]];
+
+		if(neighbour.player === otherPlayer){
+            
+            app.log("forced flip element " + neighbour.index);
+
+            this.forceFlipElement = neighbour;
+
+			return;
+		}
+	}
+    
 }
 
 app.board.prototype._detectElementAtPointer = function(mousex, mousey){
@@ -407,15 +455,15 @@ app.board.prototype._drawPlayer = function(player){
     translate(player.position.x - 30, player.position.y - 10);
     
     triangle(
-        -size, size, 
+        -(size + 3), size, 
         0, -size, 
-        size, size);
+        size + 3, size);
     
     translate(30, 10);
     
     textSize(32);
     
-    text(player.name + " turn", 0, 0);
+    text(player.name + " moves", 0, 0);
 
     pop();
 }
