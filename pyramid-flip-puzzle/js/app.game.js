@@ -511,9 +511,9 @@ app.board.prototype.draw = function(){
     
     this._drawPlayers();
     
-    //if(this.winningPlayer !== null){
-    //    this._drawWinningPlayer();
-    //}
+    if(this.winningPlayer !== null){
+        this._drawWinningPlayer();
+    }
 }
 
 app.board.prototype._drawWinningPlayer = function(){
@@ -758,7 +758,7 @@ app.board.prototype._drawElementBackground = function(element){
 
     noStroke();
 
-    fill(element.backgroundColor.r, element.backgroundColor.g, element.backgroundColor.b, 240);
+    fill(element.backgroundColor.r, element.backgroundColor.g, element.backgroundColor.b);
 
     triangle(
         element.backgroundPoints[0].x,
