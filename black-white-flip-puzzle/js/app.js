@@ -23,8 +23,8 @@ app.settings = {
     flipperKind:app.flipKind.triangle
 };
 
-app.log = function(){
+app.log = function(argument){
     if(app.debug === true){
-        console.log(object)
+        console.log(argument);
     }
 }
