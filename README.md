@@ -5,8 +5,7 @@ A collection of puzzles mainly written in javascript (p5, three.js)
 
 [black/white flip puzzle](black-white-flip-puzzle)
 
-[pyramid flip puzzle](pyramid-flip-puzzle)
-Not really a puzzle. Rather a 2-player game
+[pyramid flip puzzle](pyramid-flip-puzzle) not really a puzzle, but a 2-player game
 
 ### Failed puzzles
 
