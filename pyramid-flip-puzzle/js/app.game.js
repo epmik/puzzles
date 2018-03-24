@@ -14,22 +14,24 @@ app.rotation = {
 
 app.colors = {
     white:  { id: 0, r: 255, g: 255, b: 255 },
-    blue:   { id: 1, r: 251, g: 136, b: 0   },
-    orange: { id: 2, r: 5,   g: 98,  b: 214 },
+    orange: { id: 1, r: 251, g: 136, b: 0   },
+    blue:   { id: 2, r: 5,   g: 98,  b: 214 },
     red:    { id: 3, r: 226, g: 27,  b: 27  },
     grey:   { id: 4, r: 175, g: 175, b: 175 },
 }
 
 app.players = {
-    one: { id: 1, name: "blue player", color: app.colors.orange, position: { x: 0, y: 0 } },
-    two: { id: 2, name: "orange player", color: app.colors.blue, position: { x: 0, y: 0 } },
+    one: { id: 1, name: "blue player", color: app.colors.blue, position: { x: 0, y: 0 } },
+    two: { id: 2, name: "orange player", color: app.colors.orange, position: { x: 0, y: 0 } },
 }
 
 app.board = function(){
     this.elements = [];
     this.currentPlayer = app.players.one;
+    this.winningPlayer = null;
 	this.highlightedElement = null;
 	this.forceFlipElement = null;
+    this.playerActions = [];
 }
 
 app.board.prototype.setup = function(){
@@ -37,9 +39,9 @@ app.board.prototype.setup = function(){
     // 7 triangles per row
     // 6 rows
     
-    app.players.one.position.x = app.game.width() * 0.5 - 104;
+    app.players.one.position.x = app.game.width() * 0.5 - 66;
     app.players.one.position.y = app.game.height() - 60;
-    app.players.two.position.x = app.game.width() * 0.5 - 126;
+    app.players.two.position.x = app.game.width() * 0.5 - 84;
     app.players.two.position.y = 70;
 
     var upElement = new app.boardElement();
@@ -88,36 +90,47 @@ app.board.prototype.setup = function(){
         y -= height + (app.settings.triangleVerticalMargin * 0.5);
 
     }
+    
+    var playerTriangleIndices = this._playerDestinationTriangleIndices(app.players.one);
+    
+    for(var i = 0; i < playerTriangleIndices.length; i++){
+        
+        this.elements[playerTriangleIndices[i]].backgroundColor = app.colors.blue;
+        this.elements[playerTriangleIndices[i]].player = app.players.two;
+    }
+    
+    playerTriangleIndices = this._playerDestinationTriangleIndices(app.players.two);
+    
+    for(var i = 0; i < playerTriangleIndices.length; i++){
+        
+        this.elements[playerTriangleIndices[i]].backgroundColor = app.colors.orange;
+        this.elements[playerTriangleIndices[i]].player = app.players.one;
+    }
 
-    this.elements[2].backgroundColor = app.colors.blue;
-    this.elements[3].backgroundColor = app.colors.blue;
-    this.elements[4].backgroundColor = app.colors.blue;
-    this.elements[10].backgroundColor = app.colors.blue;
-
-    this.elements[37].backgroundColor = app.colors.orange;
-    this.elements[38].backgroundColor = app.colors.orange;
-    this.elements[39].backgroundColor = app.colors.orange;
-    this.elements[31].backgroundColor = app.colors.orange;
-
-    this.elements[2].player = app.players.one;
-    this.elements[3].player = app.players.one;
-    this.elements[4].player = app.players.one;
-    this.elements[10].player = app.players.one;
-
-    this.elements[37].player = app.players.two;
-    this.elements[38].player = app.players.two;
-    this.elements[39].player = app.players.two;
-    this.elements[31].player = app.players.two;
-
-    this.logCurrentPlayer();
+    this._logCurrentPlayer();
 }
 
-app.board.prototype.logCurrentPlayer = function(){
+
+
+app.board.prototype._playerDestinationTriangleIndices = function(player){
+
+    if(player === app.players.one){
+        return [37, 38, 39, 31];
+    }
+    return [2, 3, 4, 10];
+}
+
+app.board.prototype._logCurrentPlayer = function(){
 
     app.log("current " + this.currentPlayer.name);
 }
 
-app.board.prototype.nextPlayer = function(){
+app.board.prototype._logWinningPlayer = function(){
+
+    app.log("winning " + this.winningPlayer.name);
+}
+
+app.board.prototype._nextPlayer = function(){
 
     if(this.currentPlayer === app.players.one){
         this.currentPlayer = app.players.two;
@@ -126,17 +139,19 @@ app.board.prototype.nextPlayer = function(){
         this.currentPlayer = app.players.one;
     }
 
-    this.logCurrentPlayer();
+    this._logCurrentPlayer();
 }
 
-app.board.prototype.canMoveTo = function(element, movetoElement){
+app.board.prototype._canMoveTo = function(thisPlayer, element, movetoElement){
 
     if(movetoElement.player !== null){
 		// destination isn't empty
       	return false;
     }
+    
+    var otherPlayer = this._otherPlayer(thisPlayer);
 
-    var needsToMove = this._surroundedByOtherPlayerCount(element) > 0;
+    var needsToMove = this._surroundedByPlayerCount(otherPlayer, element) > 0;
 
     if(needsToMove === false){
 
@@ -160,14 +175,12 @@ app.board.prototype.canMoveTo = function(element, movetoElement){
     }
 
 	// is the destination surrounded by 2 element of the other player
-	var count = this._surroundedByOtherPlayerCount(movetoElement);
+	var count = this._surroundedByPlayerCount(otherPlayer, movetoElement);
 
     return count < 2;
 }
 
-app.board.prototype._surroundedByOtherPlayerCount = function(element){
-
-    var otherPlayer = this._detectOtherPlayer();
+app.board.prototype._surroundedByPlayerCount = function(thisPlayer, element){
 
 	var count = 0;
 
@@ -175,7 +188,7 @@ app.board.prototype._surroundedByOtherPlayerCount = function(element){
     {
         var n = this.elements[element.neighbours[i]];
 
-        if(n.player === otherPlayer){
+        if(n.player === thisPlayer){
           	count++;
         }
     }
@@ -183,9 +196,9 @@ app.board.prototype._surroundedByOtherPlayerCount = function(element){
     return count;
 }
 
-app.board.prototype._detectOtherPlayer = function(){
+app.board.prototype._otherPlayer = function(thisPlayer){
 
-    return this.currentPlayer === app.players.one ? app.players.two : app.players.one;
+    return thisPlayer === app.players.one ? app.players.two : app.players.one;
 }
 
 app.board.prototype._setupNeighbours = function(element){
@@ -231,7 +244,10 @@ app.board.prototype._isOnSameRow = function(elementIndex, neighbourIndex){
 
 app.board.prototype.update = function(elapsed){
     
-    if(this.forceFlipElement !== null){
+    if(this.winningPlayer !== null){
+        return;
+    }
+    else if(this.forceFlipElement !== null){
         
         this.forceFlipElement.isPulsing = true;        
 
@@ -239,7 +255,7 @@ app.board.prototype.update = function(elapsed){
 
             var neighbour = this.elements[this.forceFlipElement.neighbours[i]];
             
-            if(this.canMoveTo(this.forceFlipElement, neighbour)){
+            if(this._canMoveTo(this.currentPlayer, this.forceFlipElement, neighbour)){
                 neighbour.isPulsing = true;
                 neighbour.color = this.forceFlipElement.player.color;
             }
@@ -279,7 +295,7 @@ app.board.prototype._handlePointer = function(mousex, mousey){
 
             // hovering over an empty element
 
-            if(this.highlightedElement.isNeighbour(element) === false){
+            if(this.highlightedElement._isNeighbour(element) === false){
 
                 // the empty element is NOT a neighbour of the current highlighted element
                 // release the highlight element
@@ -307,16 +323,16 @@ app.board.prototype._handlePointer = function(mousex, mousey){
                     continue;
                 }
 
-                var canMoveTo = this.canMoveTo(this.highlightedElement, neighbour);
+                var canMoveTo = this._canMoveTo(this.currentPlayer, this.highlightedElement, neighbour);
 
                 if(canMoveTo === true){
                     neighbour.color = this.currentPlayer.color;
                     neighbour.isPulsing = true;
                     canMoveToCount++;
                 }
-//                else{
-//                    neighbour.color = app.colors.red;
-//                }
+                else{
+                    neighbour.color = app.colors.red;
+                }
             }
 
             if(canMoveToCount === 0){
@@ -337,9 +353,11 @@ app.board.prototype.handleClicks = function(mousex, mousey){
 
 		var neighbour = this.elements[this.highlightedElement.neighbours[i]];
 
-		if(neighbour.isInside(mousex, mousey) && this.canMoveTo(this.highlightedElement, neighbour)){
+		if(neighbour._isInside(mousex, mousey) && this._canMoveTo(this.currentPlayer, this.highlightedElement, neighbour)){
             
             app.log("clicked on element " + neighbour.index);
+            
+            this.playerActions.push({ player: this.currentPlayer.id, from: this.highlightedElement.index, to: neighbour.index});
 
 			neighbour.player = this.currentPlayer;
             neighbour.currentPulse = 0;
@@ -355,17 +373,83 @@ app.board.prototype.handleClicks = function(mousex, mousey){
             if(this.forceFlipElement !== null){
                 this.highlightedElement = this.forceFlipElement;
             }
-
-			this.nextPlayer();
+            
+            this._detectWin();
+            
+            if(this.winningPlayer !== null){
+                this._logWinningPlayer();
+            }
+            else{
+                this._nextPlayer();
+            }
+            
+            app.log(this.playerActions);
 
 			return;
 		}
 	}
 }
 
+app.board.prototype.handleKeyPress = function(){
+
+    if(keyCode === 34){ // page down
+        
+        var playerActions = this.playerActions.pop();
+        
+        var player = playerActions.player == 1 ? app.players.one : app.players.two;
+        
+        this.elements[playerActions.to].player = null;
+        this.elements[playerActions.from].player = player;
+    }
+}
+
+app.board.prototype.handleKeyRelease = function(){
+
+}
+
+app.board.prototype._detectWin = function(){
+    
+    if(this.forceFlipElement !== null){
+        
+        var canMoveToCount = 0;
+        
+        var otherPlayer = this._otherPlayer(this.currentPlayer);
+        
+        for(var i = 0; i < this.forceFlipElement.neighbours.length; i++){
+
+            var neighbour = this.elements[this.forceFlipElement.neighbours[i]];
+
+            if(this._canMoveTo(otherPlayer, this.forceFlipElement, neighbour) === true){
+                canMoveToCount++;
+            }
+        }
+        
+        if(canMoveToCount === 0){
+            
+            this.winningPlayer = this.currentPlayer;
+            
+            return;
+        }
+    }
+    
+    var destinationCount = 0;
+         
+    var playerDestinationTriangleIndices = this._playerDestinationTriangleIndices(this.currentPlayer);
+    
+    for(var i = 0; i < playerDestinationTriangleIndices.length; i++){
+        
+        destinationCount += this.elements[playerDestinationTriangleIndices[i]].player === this.currentPlayer ? 1 : 0;
+    }
+            
+    if(destinationCount === playerDestinationTriangleIndices.length){
+
+        this.winningPlayer = this.currentPlayer;
+    }
+}
+
 app.board.prototype._detectForcedFlipElement = function(element){
     
-    var otherPlayer = this._detectOtherPlayer();
+    var otherPlayer = this._otherPlayer(this.currentPlayer);
     
 	for(var i = 0; i < element.neighbours.length; i++){
 
@@ -380,7 +464,6 @@ app.board.prototype._detectForcedFlipElement = function(element){
 			return;
 		}
 	}
-    
 }
 
 app.board.prototype._detectElementAtPointer = function(mousex, mousey){
@@ -389,7 +472,7 @@ app.board.prototype._detectElementAtPointer = function(mousex, mousey){
 
         var element = this.elements[i];
 
-        if(element.isInside(mousex, mousey) === true){
+        if(element._isInside(mousex, mousey) === true){
             
             return element;
         }
@@ -411,7 +494,7 @@ app.board.prototype._resetHighlightedDotColors = function(){
 }
 
 app.board.prototype.draw = function(){
-
+    
     push();
 
     noStroke();
@@ -420,15 +503,43 @@ app.board.prototype.draw = function(){
 
     for(var i = 0; i < this.elements.length; i++){
 
-        this.elements[i].draw();
+        this._drawElement(this.elements[i]);
 
     }
-
-//	this.drawHighlightedElementNeighbours(this.highlightedElement);
 
     pop();
     
     this._drawPlayers();
+    
+    if(this.winningPlayer !== null){
+        this._drawWinningPlayer();
+    }
+}
+
+app.board.prototype._drawWinningPlayer = function(){
+    
+    var width = app.game.width();
+    var height = app.game.height();
+    var x = 0;
+    var y = 0;
+    
+    push();
+
+    noStroke();
+
+    fill(255, 255, 255, 200);
+
+    rect(x, y, width, height, 24);
+    
+    fill(this.winningPlayer.color.r, this.winningPlayer.color.g, this.winningPlayer.color.b);
+    
+    textAlign(CENTER, CENTER);
+    
+    textSize(32);
+    
+    text(this.winningPlayer.name + " wins!", x, y, width, height);    
+
+    pop();
 }
 
 app.board.prototype._drawPlayers = function(){
@@ -443,7 +554,7 @@ app.board.prototype._drawPlayer = function(player){
 
     noStroke();
     
-    if(this.currentPlayer === player){
+    if(this.currentPlayer === player && this.winningPlayer === null){
         fill(player.color.r, player.color.g, player.color.b);
     }
     else{
@@ -461,52 +572,12 @@ app.board.prototype._drawPlayer = function(player){
     
     translate(30, 10);
     
-    textSize(32);
+    textSize(24);
     
     text(player.name + " moves", 0, 0);
 
     pop();
 }
-
-
-//app.board.prototype.drawHighlightedElementNeighbours = function(){
-//
-//	if(this.highlightedElement === null){
-//
-//		return;
-//	}
-//
-//	var r, g, b;
-//
-//    for(var i = 0; i < this.highlightedElement.neighbours.length; i++){
-//
-//        var neighbour = this.elements[this.highlightedElement.neighbours[i]];
-//
-//		if(neighbour.state !== app.boardElementState.empty){
-//
-//            continue;
-//        }
-//
-//		var canMoveTo = this.canMoveTo(this.highlightedElement, neighbour);
-//
-//		if(canMoveTo === false){
-//			r = 190; g = 0; b = 0;
-//		}
-//		else{
-//
-//			neighbour.isPulsing = true;
-//
-//			if(this.currentPlayer === app.boardElementState.black){
-//				r = 251; g = 136; b = 0;
-//			}
-//			else{
-//				r = 5; g = 98; b = 214;
-//			}
-//		}
-//
-//        neighbour.drawHoverState(r, g, b);
-//    }
-//}
 
 
 
@@ -621,7 +692,7 @@ app.boardElement.prototype._applyPulse = function(elapsed, speed){
 	}
 }
 
-app.boardElement.prototype.isNeighbour = function(element){
+app.boardElement.prototype._isNeighbour = function(element){
 
 	for(var i = 0; i < this.neighbours.length; i++){
 		if(this.neighbours[i] === element.index){
@@ -631,7 +702,7 @@ app.boardElement.prototype.isNeighbour = function(element){
 	return false;
 }
 
-app.boardElement.prototype.isInside = function(mousex, mousey){
+app.boardElement.prototype._isInside = function(mousex, mousey){
 
     mousex -= this.center.x;
     mousey -= this.center.y;
@@ -639,63 +710,81 @@ app.boardElement.prototype.isInside = function(mousex, mousey){
     return app.collision.isPointInsideTriangle(mousex, mousey, this.backgroundPoints);
 }
 
-app.boardElement.prototype.draw = function(){
+app.board.prototype._drawElement = function(element){
 
     push();
     
 //    app.log(this.center.x + " | " + this.center.y)
 
-    translate(this.center.x, this.center.y);
+    translate(element.center.x, element.center.y);
     
-    this._drawBackground();
+    this._drawElementBackground(element);
 
-    if(this.player === null){
+    if(element.player === null){
 
-        this._drawDot();
+        this._drawElementDot(element);
     }
     else{
-        fill(this.player.color.r, this.player.color.g, this.player.color.b);
+        
+        if(this.forceFlipElement === element){
+            fill(app.colors.red.r, app.colors.red.g, app.colors.red.b);
+        }
+        else{
+            fill(element.player.color.r, element.player.color.g, element.player.color.b);
+        }
 
-        var d = app.settings.triangleMinPulseFactor + (app.settings.triangleMaxPulseFactor - app.settings.triangleMinPulseFactor) * this.currentPulse;
+        if(element.backgroundColor === element.player.color){
+        	strokeWeight(2);
+        	stroke(255);
+        }
+        
+
+        var d = app.settings.triangleMinPulseFactor + (app.settings.triangleMaxPulseFactor - app.settings.triangleMinPulseFactor) * element.currentPulse;
 
         triangle(
-            this.trianglePoints[0].x * d,
-            this.trianglePoints[0].y * d,
-            this.trianglePoints[1].x * d,
-            this.trianglePoints[1].y * d,
-            this.trianglePoints[2].x * d,
-            this.trianglePoints[2].y * d
+            element.trianglePoints[0].x * d,
+            element.trianglePoints[0].y * d,
+            element.trianglePoints[1].x * d,
+            element.trianglePoints[1].y * d,
+            element.trianglePoints[2].x * d,
+            element.trianglePoints[2].y * d
         );
     }
 
     pop();
 }
 
-app.boardElement.prototype._drawBackground = function(){
+app.board.prototype._drawElementBackground = function(element){
 
     noStroke();
 
-    fill(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b);
+    fill(element.backgroundColor.r, element.backgroundColor.g, element.backgroundColor.b, 240);
 
     triangle(
-        this.backgroundPoints[0].x,
-        this.backgroundPoints[0].y,
-        this.backgroundPoints[1].x,
-        this.backgroundPoints[1].y,
-        this.backgroundPoints[2].x,
-        this.backgroundPoints[2].y
+        element.backgroundPoints[0].x,
+        element.backgroundPoints[0].y,
+        element.backgroundPoints[1].x,
+        element.backgroundPoints[1].y,
+        element.backgroundPoints[2].x,
+        element.backgroundPoints[2].y
     );
 }
 
-app.boardElement.prototype._drawDot = function(){
+app.board.prototype._drawElementDot = function(element){
 
     noStroke();
+    
+    if(element.backgroundColor === element.color){
+        fill(255);
+    }
+    else{
+        fill(element.color.r, element.color.g, element.color.b);
+    }
 
-	fill(this.color.r, this.color.g, this.color.b);
 
-	var center = app.math.computeTriangleCentroid(this.trianglePoints);
+	var center = app.math.computeTriangleCentroid(element.trianglePoints);
      
-    var d = app.settings.dotMinPulseFactor + (app.settings.dotMaxPulseFactor - app.settings.dotMinPulseFactor) * this.currentPulse;
+    var d = app.settings.dotMinPulseFactor + (app.settings.dotMaxPulseFactor - app.settings.dotMinPulseFactor) * element.currentPulse;
 
     ellipse(center.x, center.y, app.settings.dotSize * d);
 }
@@ -824,10 +913,10 @@ app.pyramidFlip.prototype.handleHover = function () {
 
 app.pyramidFlip.prototype.handleKeyPress = function () {
 
-//    this.player.handleKeyPress();
+//    this.board.handleKeyPress();
 }
 
 app.pyramidFlip.prototype.handleKeyRelease = function () {
 
-//    this.player.handleKeyRelease();
+    this.board.handleKeyRelease();
 }
