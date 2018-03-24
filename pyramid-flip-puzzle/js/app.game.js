@@ -511,9 +511,9 @@ app.board.prototype.draw = function(){
     
     this._drawPlayers();
     
-    if(this.winningPlayer !== null){
-        this._drawWinningPlayer();
-    }
+    //if(this.winningPlayer !== null){
+    //    this._drawWinningPlayer();
+    //}
 }
 
 app.board.prototype._drawWinningPlayer = function(){
